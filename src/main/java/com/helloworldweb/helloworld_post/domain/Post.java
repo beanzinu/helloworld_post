@@ -1,7 +1,9 @@
 package com.helloworldweb.helloworld_post.domain;
 
+import com.helloworldweb.helloworld_post.dto.PostRequestDto;
 import com.sun.istack.NotNull;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
@@ -10,6 +12,7 @@ import java.util.List;
 
 @Entity
 @NoArgsConstructor
+@Getter
 public class Post {
     @Id
     @GeneratedValue
@@ -52,6 +55,20 @@ public class Post {
         this.searchCounts = searchCounts;
         this.views = views;
         this.solved = solved;
+    }
+
+    // 어떤 유저가 작성했는지에 대한 연관관계 설정
+    public Post changeUser(User user){
+        this.user = user;
+        user.addPost(this);
+        return this;
+    }
+
+    public Post changeTitleAndContentAndTagsWithDto(PostRequestDto postRequestDto){
+        this.title = postRequestDto.getTitle();
+        this.content = postRequestDto.getContent();
+        this.tags = postRequestDto.getTags();
+        return this;
     }
 
 }
