@@ -1,18 +1,13 @@
 package com.helloworldweb.helloworld_post.dto;
 
-import com.helloworldweb.helloworld_post.domain.Post;
 import com.helloworldweb.helloworld_post.domain.User;
-import com.sun.istack.NotNull;
 import lombok.Builder;
 import lombok.Data;
-
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
-import java.util.ArrayList;
-import java.util.List;
+import lombok.Getter;
+import org.json.simple.JSONObject;
 
 @Data
+@Getter
 public class UserRequestDto {
     private Long id;
     private String email;
@@ -26,6 +21,16 @@ public class UserRequestDto {
         this.profileUrl = profileUrl;
         this.nickName = nickName;
     }
+
+    // JSON -> UserRequestDto
+    public static UserRequestDto jsonObjectToUserRequestDto(JSONObject jsonObject){
+        return UserRequestDto.builder()
+                .email((String)jsonObject.get("email"))
+                .nickName((String)jsonObject.get("userName"))
+                .profileUrl((String)jsonObject.get("profileUrl"))
+                .build();
+    }
+
     public User toEntity(){
         return User.builder()
                 .id(this.id)
@@ -34,5 +39,6 @@ public class UserRequestDto {
                 .nickName(this.nickName)
                 .build();
     }
+
 }
 

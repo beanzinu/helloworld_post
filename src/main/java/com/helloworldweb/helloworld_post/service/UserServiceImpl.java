@@ -4,10 +4,9 @@ import com.helloworldweb.helloworld_post.domain.User;
 import com.helloworldweb.helloworld_post.dto.UserRequestDto;
 import com.helloworldweb.helloworld_post.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.NoSuchElementException;
+import javax.persistence.NoResultException;
 
 @Service
 @RequiredArgsConstructor
@@ -22,7 +21,7 @@ public class UserServiceImpl implements UserService{
      */
     @Override
     public User getUserByEmail(String email) {
-        User findUser = userRepository.findByEmail(email).orElseThrow(NoSuchElementException::new);
+        User findUser = userRepository.findByEmail(email).orElseThrow(()->{throw new NoResultException(email);});
         return findUser;
     }
 
