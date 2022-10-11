@@ -1,6 +1,7 @@
 package com.helloworldweb.helloworld_post.service;
 
 import com.helloworldweb.helloworld_post.domain.User;
+import com.helloworldweb.helloworld_post.dto.UserRequestDto;
 
 public interface UserService {
     /**
@@ -10,4 +11,5 @@ public interface UserService {
      */
     User getUserByEmail(String email);
 
+    void addUser(UserRequestDto userRequestDto);
 }

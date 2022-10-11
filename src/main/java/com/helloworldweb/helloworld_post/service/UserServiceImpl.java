@@ -1,6 +1,7 @@
 package com.helloworldweb.helloworld_post.service;
 
 import com.helloworldweb.helloworld_post.domain.User;
+import com.helloworldweb.helloworld_post.dto.UserRequestDto;
 import com.helloworldweb.helloworld_post.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,4 +25,9 @@ public class UserServiceImpl implements UserService{
         User findUser = userRepository.findByEmail(email).orElseThrow(NoSuchElementException::new);
         return findUser;
     }
+
+    public void addUser(UserRequestDto userRequestDto){
+        userRepository.save(userRequestDto.toEntity());
+    }
+
 }
