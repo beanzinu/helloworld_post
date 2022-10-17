@@ -21,7 +21,22 @@ public class UserServiceImpl implements UserService{
      */
     @Override
     public User getUserByEmail(String email) {
-        User findUser = userRepository.findByEmail(email).orElseThrow(()->{throw new NoResultException(email);});
+        User findUser = userRepository.findByEmail(email).orElseThrow(()->{
+            throw new NoResultException(email);
+        });
+        return findUser;
+    }
+
+    /**
+     * Id를 통한 유저조회
+     * @param id : 유저 PK
+     * @return : User
+     */
+    @Override
+    public User getUserById(Long id) {
+        User findUser = userRepository.findById(id).orElseThrow(() -> {
+            throw new NoResultException(id.toString());
+        });
         return findUser;
     }
 

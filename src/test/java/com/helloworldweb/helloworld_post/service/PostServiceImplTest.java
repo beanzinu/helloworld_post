@@ -11,6 +11,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -137,7 +138,18 @@ public class PostServiceImplTest {
         });
     }
 
-
+    @Test
+    @DisplayName("특정 유저의 게시물 조회")
+    void getAllPostByUserId(){
+    //given
+        when(postRepository.findAllByUserId(any(Long.class))).thenReturn(List.of(testPost));
+        when(userService.getUserById(any(Long.class))).thenReturn(testUser);
+    //when
+        List<PostResponseDto> findPosts = postService.getAllPostByUserId(testUser.getId());
+    //then
+        assertEquals(findPosts.get(0).getContent(),testPost.getContent());
+        assertEquals(findPosts.get(0).getTitle(),testPost.getTitle());
+    }
 
 
 }

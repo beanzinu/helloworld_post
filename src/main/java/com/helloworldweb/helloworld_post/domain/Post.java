@@ -15,10 +15,10 @@ import java.util.List;
 @Getter
 public class Post {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     @NotNull
     private User user;
@@ -47,8 +47,8 @@ public class Post {
     public Post(Long id, User user, List<PostComment> postComments, List<PostImage> postImages, String title, String content, String tags, Long searchCounts, Long views, boolean solved) {
         this.id = id;
         this.user = user;
-        this.postComments = postComments;
-        this.postImages = postImages;
+        this.postComments = postComments==null? new ArrayList<>() : postComments;
+        this.postImages = postImages==null? new ArrayList<>() : postImages;
         this.title = title;
         this.content = content;
         this.tags = tags;
@@ -64,7 +64,19 @@ public class Post {
         return this;
     }
 
-    public Post changeTitleAndContentAndTagsWithDto(PostRequestDto postRequestDto){
+    public void changeTitle(String title){
+        this.title = title;
+    }
+    public void changeContent(String content){
+        this.title = content;
+    }
+
+    public void addPostComment(PostComment postComment){
+        this.postComments.add(postComment);
+        postComment.changePost(this);
+    }
+
+    public Post changeWithDto(PostRequestDto postRequestDto){
         this.title = postRequestDto.getTitle();
         this.content = postRequestDto.getContent();
         this.tags = postRequestDto.getTags();

@@ -9,7 +9,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.NoResultException;
+import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -65,8 +68,7 @@ public class PostServiceImpl implements PostService {
         if (findPost.getUser().getId() != caller.getId())
             throw new IllegalCallerException();
         // findPost 안의 내용을 postRequestDto 안의 내용으로 대체
-        Post changedPost = findPost.changeTitleAndContentAndTagsWithDto(postRequestDto);
-
+        Post changedPost = findPost.changeWithDto(postRequestDto);
         return new PostResponseDto(changedPost);
     }
 
@@ -80,12 +82,26 @@ public class PostServiceImpl implements PostService {
     @Transactional
     public void deletePost(Long postId, String email) {
         // postId를 통해 Post 조회
-        Post findPost = postRepository.findById(postId).orElseThrow(NoSuchElementException::new);
+        Post findPost = postRepository.findById(postId).orElseThrow(NoResultException::new);
         // email 을 통해 User 조회 -> 해당 유저의 글이 아닌 경우 IllegalCallerException
         User caller = userService.getUserByEmail(email);
         if (findPost.getUser().getId() != caller.getId())
             throw new IllegalCallerException();
 
         postRepository.delete(findPost);
+    }
+
+    /**
+     * READ : 해당 이메일의 유저가 작성한 모든 게시물 조회
+     * @param userId : 유저의 이메일
+     * @return : List<PostResponseDto>
+     */
+    @Override
+    public List<PostResponseDto> getAllPostByUserId(Long userId) {
+        User findUser = userService.getUserById(userId);
+        List<PostResponseDto> findPostDto = postRepository.findAllByUserId(findUser.getId())
+                .stream().map(PostResponseDto::new)
+                .collect(Collectors.toList());
+        return findPostDto;
     }
 }

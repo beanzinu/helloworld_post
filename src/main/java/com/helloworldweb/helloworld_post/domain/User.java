@@ -12,13 +12,17 @@ import java.util.List;
 @Entity
 @NoArgsConstructor
 @Getter
+//@Table(indexes = {@Index(name = "email_index",columnList = "email")})
 public class User {
 
     @Id @GeneratedValue
     private Long id;
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user",cascade = CascadeType.PERSIST)
     private List<Post> posts = new ArrayList<>();
+
+    @OneToMany(mappedBy = "writer")
+    private List<PostSubComment> subComments = new ArrayList<>();
 
     @NotNull
     private String email;
@@ -26,17 +30,17 @@ public class User {
     private String nickName;
 
     @Builder
-    public User(Long id, String email, String profileUrl, String nickName) {
+    public User(Long id, String email, String profileUrl, String nickName,List<PostSubComment> postSubComments) {
         this.id = id;
         this.email = email;
         this.posts = new ArrayList<>();
         this.profileUrl = profileUrl;
         this.nickName = nickName;
+        this.subComments = postSubComments==null ? new ArrayList<>() : postSubComments;
     }
 
     public void addPost(Post post){
         this.posts.add(post);
     }
-
 
 }
