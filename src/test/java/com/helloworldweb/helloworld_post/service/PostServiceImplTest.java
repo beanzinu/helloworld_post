@@ -10,6 +10,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
@@ -149,6 +153,28 @@ public class PostServiceImplTest {
     //then
         assertEquals(findPosts.get(0).getContent(),testPost.getContent());
         assertEquals(findPosts.get(0).getTitle(),testPost.getTitle());
+        assertEquals(findPosts.get(0).getUserResponseDto().getEmail(),testUser.getEmail());
+    }
+
+    @Test
+    @DisplayName("해당 페이지의 모든 게시물 조회")
+    void getAllPostByPage(){
+    //given : 총 4개의 게시물이 있을 경우
+        Post post1 = Post.builder().user(testUser).build();
+        Post post2 = Post.builder().user(testUser).build();
+        Post post3 = Post.builder().user(testUser).build();
+        PageImpl<Post> savedPage = new PageImpl<>(List.of(testPost, post1, post2, post3));
+        Page<Post> testPage = new PageImpl<>(List.of(testPost,post1,post2));
+        when(postRepository.findAll(any(Pageable.class))).thenReturn(testPage);
+    //when : 첫번째 페이지의 게시물을 찾는다.
+        Pageable pageable = PageRequest.of(0,3);
+        List<PostResponseDto> findPostDtos = postService.getAllPostByPage(pageable);
+    //then : 3개의 게시물만 찾아져야한다.
+        assertNotEquals(findPostDtos.size(),savedPage.getTotalPages());
+        assertEquals(findPostDtos.size(),3);
+        assertEquals(findPostDtos.get(0).getContent(),testPost.getContent());
+        assertEquals(findPostDtos.get(0).getTitle(),testPost.getTitle());
+        assertEquals(findPostDtos.get(0).getUserResponseDto().getEmail(),testUser.getEmail());
     }
 
 

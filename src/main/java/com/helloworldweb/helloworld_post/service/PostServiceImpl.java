@@ -6,6 +6,7 @@ import com.helloworldweb.helloworld_post.dto.PostRequestDto;
 import com.helloworldweb.helloworld_post.dto.PostResponseDto;
 import com.helloworldweb.helloworld_post.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -99,9 +100,20 @@ public class PostServiceImpl implements PostService {
     @Override
     public List<PostResponseDto> getAllPostByUserId(Long userId) {
         User findUser = userService.getUserById(userId);
-        List<PostResponseDto> findPostDto = postRepository.findAllByUserId(findUser.getId())
-                .stream().map(PostResponseDto::new)
+        return postRepository.findAllByUserId(findUser.getId())
+                .stream().map(PostResponseDto::getDtoWithUser)
                 .collect(Collectors.toList());
-        return findPostDto;
+    }
+
+    /**
+     * READ : 해당 페이지의 모든 게시물 조회
+     * @param pageable : 페이지와 사이즈를 담고있는 Pageable 객체
+     * @return : List<PostResponseDto>
+     */
+    @Override
+    public List<PostResponseDto> getAllPostByPage(Pageable pageable) {
+        return postRepository.findAll(pageable).toList()
+                .stream().map(PostResponseDto::getDtoWithUser)
+                .collect(Collectors.toList());
     }
 }

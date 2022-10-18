@@ -8,6 +8,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
@@ -72,6 +75,14 @@ public class PostRepositoryTest {
         post.addPostComment(postComment);
         post.addPostComment(postComment1);
 
+        // Page 확인을 위해 10개의 Post 저장
+        for(int i=0;i<10;i++){
+            Post post1 = Post.builder()
+                    .user(postWriter)
+                    .build();
+            postRepository.save(post1);
+        }
+
         postRepository.save(post);
         System.out.println("START");
         System.out.println("======================");
@@ -92,6 +103,20 @@ public class PostRepositoryTest {
     @Test
     void findAllWithUser(){
         postRepository.findAllWithUser();
+    }
+
+    @Test
+    void findAllByPage(){
+        for (int i=0;i<5;i++) {
+            System.out.println("i = " + i);
+            Pageable pageable = PageRequest.of(i, 3);
+            Page<Post> all = postRepository.findAll(pageable);
+            List<Post> collect = all.toList();
+            for (Post p : collect) {
+                System.out.println("p.getId() = " + p.getId());
+            }
+            System.out.println("=============== = ");
+        }
     }
 
 }
