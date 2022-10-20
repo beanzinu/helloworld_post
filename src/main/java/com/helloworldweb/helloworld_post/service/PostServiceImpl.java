@@ -1,5 +1,6 @@
 package com.helloworldweb.helloworld_post.service;
 
+import com.helloworldweb.helloworld_post.domain.Cache;
 import com.helloworldweb.helloworld_post.domain.Post;
 import com.helloworldweb.helloworld_post.domain.User;
 import com.helloworldweb.helloworld_post.dto.PostRequestDto;
@@ -11,8 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.NoResultException;
-import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -21,6 +21,9 @@ public class PostServiceImpl implements PostService {
     
     private final PostRepository postRepository;
     private final UserService userService;
+
+    // 캐시
+    private static Cache<Long,Post> postCache = new Cache<>(5);
 
     /**
      * CREATE : 게시물 작성
@@ -35,9 +38,11 @@ public class PostServiceImpl implements PostService {
         Post newPost = postRequestDto.toEntity();
         // 어떤 유저가 작성했는지에 대한 연관관계 설정
         User caller = userService.getUserByEmail(email);
-        Post userMappedPost = newPost.changeUser(caller);
-
-        Post savedPost = postRepository.save(userMappedPost);
+        newPost.changeUser(caller);
+        // DB
+        Post savedPost = postRepository.save(newPost);
+        // 캐시
+        postCache.syncPut(savedPost.getId(),savedPost);
         return new PostResponseDto(savedPost);
     }
 
@@ -48,8 +53,16 @@ public class PostServiceImpl implements PostService {
      */
     @Override
     public PostResponseDto getPost(Long postId) {
-        Post findPost = postRepository.findById(postId).orElseThrow(NoSuchElementException::new);
-        return new PostResponseDto(findPost);
+        if ( postCache.containsKey(postId)) { // 캐시 hit
+            Post cachePost = postCache.get(postId);
+            return new PostResponseDto(cachePost);
+        }
+        else { // 캐시 miss
+            Post findPost = postRepository.findById(postId).orElseThrow(NoSuchElementException::new);
+            // 캐시
+            postCache.put(findPost.getId(), findPost);
+            return new PostResponseDto(findPost);
+        }
     }
 
     /**
@@ -68,8 +81,12 @@ public class PostServiceImpl implements PostService {
         User caller = userService.getUserByEmail(email);
         if (findPost.getUser().getId() != caller.getId())
             throw new IllegalCallerException();
-        // findPost 안의 내용을 postRequestDto 안의 내용으로 대체
+        // findPost 안의 내용을 postRequestDto 안의 내용으로 대체 : Dirty Check
         Post changedPost = findPost.changeWithDto(postRequestDto);
+        // 캐시
+        if ( postCache.containsKey(changedPost.getId())){
+            postCache.put(changedPost.getId(),changedPost);
+        }
         return new PostResponseDto(changedPost);
     }
 
@@ -112,8 +129,16 @@ public class PostServiceImpl implements PostService {
      */
     @Override
     public List<PostResponseDto> getAllPostByPage(Pageable pageable) {
-        return postRepository.findAll(pageable).toList()
-                .stream().map(PostResponseDto::getDtoWithUser)
+        List<Post> findPosts = postRepository.findAllWithUser(pageable);
+        // 캐시
+        Map<Long,Post> map = new HashMap<>();
+        for ( Post p : findPosts){
+            map.put(p.getId(),p);
+        }
+        postCache.syncPutAll(map);
+
+        return findPosts.stream().map(PostResponseDto::getDtoWithUser)
                 .collect(Collectors.toList());
     }
+
 }

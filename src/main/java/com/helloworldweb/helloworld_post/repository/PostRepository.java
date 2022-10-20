@@ -1,6 +1,7 @@
 package com.helloworldweb.helloworld_post.repository;
 
 import com.helloworldweb.helloworld_post.domain.Post;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -22,5 +23,8 @@ public interface PostRepository extends JpaRepository<Post,Long> {
      */
     @Query(value = "select p from Post p join fetch p.user")
     List<Post> findAllWithUser();
+
+    @Query(value = "select p from Post p join fetch p.user")
+    List<Post> findAllWithUser(Pageable pageable);
 
 }

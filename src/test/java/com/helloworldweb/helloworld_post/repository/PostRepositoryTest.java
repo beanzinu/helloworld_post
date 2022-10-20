@@ -3,9 +3,10 @@ import com.helloworldweb.helloworld_post.domain.Post;
 import com.helloworldweb.helloworld_post.domain.PostComment;
 import com.helloworldweb.helloworld_post.domain.PostSubComment;
 import com.helloworldweb.helloworld_post.domain.User;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import com.helloworldweb.helloworld_post.dto.PostRequestDto;
+import com.helloworldweb.helloworld_post.dto.PostResponseDto;
+import com.helloworldweb.helloworld_post.service.PostService;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
@@ -19,6 +20,10 @@ public class PostRepositoryTest {
 
     @Autowired
     private PostRepository postRepository;
+
+    // cache 테스트
+    @Autowired
+    PostService postService;
 
     @Autowired
     private UserRepository userRepository;
@@ -119,4 +124,80 @@ public class PostRepositoryTest {
         }
     }
 
+
+    @Test
+    @DisplayName("LRU 알고리즘을 통한 캐시")
+    void findPostWithCache(){
+        // [12,13,14,15,16]
+        for(int i=0;i<5;i++){
+            PostRequestDto p =PostRequestDto.builder()
+                    .content(Integer.toString(i))
+                    .build();
+            postService.addPost(p,"123");
+        }
+        // [14,15,16,12,13]
+        postService.getPost(12L);
+        postService.getPost(13L);
+        // [ 16,12,13,17,18]
+        for(int i=0;i<2;i++){
+            PostRequestDto p =PostRequestDto.builder()
+                    .content(Integer.toString(i))
+                    .build();
+            postService.addPost(p,"123");
+        }
+    }
+
+    @Test
+    @DisplayName("페이지 조회 시 캐시사용")
+    void cacheResultsFromFindAllByPage(){
+        Pageable pageable = PageRequest.of(0,3);
+        Thread thread = new Thread(new MyRunnable());
+        thread.start();
+        postService.getAllPostByPage(pageable);
+
+    }
+    
+    @Test
+    @DisplayName("변경된 내용 캐시로부터 가져오기")
+    void getChangedResultFromCache(){
+        PostResponseDto beforePost = postService.getPost(1L);
+        System.out.println("beforePost.getTitle() = " + beforePost.getTitle());
+        postService.updatePost(PostRequestDto.builder().post_id(1L).title("cache title").user_id(2L).build(),"234");
+        PostResponseDto afterPost = postService.getPost(1L);
+        System.out.println("afterPost.getTitle() = " + afterPost.getTitle());
+    }
+    
+
+    @Test
+    @DisplayName("병합을 통한 임의수정")
+    void changePostByMerging(){
+        Post post = Post.builder()
+                .id(1L)
+                .title("merge title")
+//                .content("merge content")
+                .build();
+        postRepository.save(post);
+    }
+
+    @Nested
+    class MyRunnable implements Runnable{
+        /**
+         * When an object implementing interface <code>Runnable</code> is used
+         * to create a thread, starting the thread causes the object's
+         * <code>run</code> method to be called in that separately executing
+         * thread.
+         * <p>
+         * The general contract of the method <code>run</code> is that it may
+         * take any action whatsoever.
+         *
+         * @see java.lang.Thread#run()
+         */
+        @Override
+        public void run() {
+            Pageable pageable1 = PageRequest.of(1,3);
+            System.out.println("Thread working");
+            postService.getAllPostByPage(pageable1);
+        }
+    }
 }
+
