@@ -12,8 +12,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import java.util.List;
+import java.util.Optional;
 
 @SpringBootTest
 public class PostRepositoryTest {
@@ -22,7 +25,8 @@ public class PostRepositoryTest {
     private PostRepository postRepository;
 
     // cache 테스트
-    @Autowired
+//    @Autowired
+    @Resource(name = "postServiceImpl")
     PostService postService;
 
     @Autowired
@@ -87,6 +91,13 @@ public class PostRepositoryTest {
                     .build();
             postRepository.save(post1);
         }
+
+        // 100개의 PostComment 생성
+//        for (int i=0;i<100;i++){
+//            PostComment pc = PostComment.builder()
+//                    .build();
+//            post.addPostComment(pc);
+//        }
 
         postRepository.save(post);
         System.out.println("START");
