@@ -58,10 +58,9 @@ public class Post {
     }
 
     // 어떤 유저가 작성했는지에 대한 연관관계 설정
-    public Post changeUser(User user){
+    public void changeUser(User user){
         this.user = user;
         user.addPost(this);
-        return this;
     }
 
     public void changeTitle(String title){

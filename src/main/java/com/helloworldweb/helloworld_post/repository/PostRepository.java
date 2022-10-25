@@ -1,9 +1,9 @@
 package com.helloworldweb.helloworld_post.repository;
 
 import com.helloworldweb.helloworld_post.domain.Post;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
@@ -14,7 +14,7 @@ public interface PostRepository extends JpaRepository<Post,Long> {
      * @param id : 유저 PK
      * @return : List<Post>
      */
-    List<Post> findAllByUserId(@Param(value = "id") Long id);
+    List<Post> findAllByUserId(Long id);
 
     /**
      * 모든 게시물 조회 시 유저정보 포함
@@ -22,5 +22,14 @@ public interface PostRepository extends JpaRepository<Post,Long> {
      */
     @Query(value = "select p from Post p join fetch p.user")
     List<Post> findAllWithUser();
+
+    @Query(value = "select p from Post p join fetch p.user")
+    List<Post> findAllWithUser(Pageable pageable);
+
+    /**
+     * 상위 5개 게시물 조회
+     * @return : List<Post>
+     */
+    List<Post> findTop5ByOrderByViewsDesc();
 
 }
