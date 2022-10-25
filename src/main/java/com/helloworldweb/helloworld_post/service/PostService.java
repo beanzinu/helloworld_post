@@ -53,4 +53,10 @@ public interface PostService {
      * @return : List<PostResponseDto>
      */
     List<PostResponseDto> getAllPostByPage(Pageable pageable);
+
+    /**
+     * READ : 상위 질문들 조회
+     * @return : List<PostResponseDto>
+     */
+    List<PostResponseDto> getTopQuestions();
 }

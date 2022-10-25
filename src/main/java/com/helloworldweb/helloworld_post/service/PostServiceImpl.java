@@ -141,4 +141,14 @@ public class PostServiceImpl implements PostService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * READ : 상위 질문들 X개 조회
+     * @return : List<PostResponseDto>
+     */
+    @Override
+    public List<PostResponseDto> getTopQuestions() {
+        List<Post> findPosts = postRepository.findTop5ByOrderByViewsDesc();
+        return findPosts.stream().map(PostResponseDto::getDtoWithUser)
+                .collect(Collectors.toList());
+    }
 }

@@ -11,6 +11,7 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 @RequiredArgsConstructor
@@ -22,6 +23,9 @@ public class JwtAuthenticationFilter extends GenericFilterBean {
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         String token = ((HttpServletRequest) request).getHeader("Auth");
         response.setCharacterEncoding("UTF-8");
+
+        // CORS 정책
+        ( (HttpServletResponse) response ).setHeader("Access-Control-Allow-Origin","http://localhost:3000");
 
         // 임시
         System.out.println("===== 임시로 필터통과 ======");

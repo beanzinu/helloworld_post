@@ -177,5 +177,27 @@ public class PostServiceImplTest {
         assertEquals(findPostDtos.get(0).getUserResponseDto().getEmail(),testUser.getEmail());
     }
 
+    @Test
+    @DisplayName("상위 X개 게시물 검색")
+    void getTopQuestions(){
+    //given
+        Post post1 = Post.builder().user(testUser).views(5L).build();
+        Post post2 = Post.builder().user(testUser).views(4L).build();
+        Post post3 = Post.builder().user(testUser).views(3L).build();
+        Post post4 = Post.builder().user(testUser).views(2L).build();
+        Post post5 = Post.builder().user(testUser).views(1L).build();
+        List<Post> postList = List.of(post1,post2,post3,post4,post5);
+        when(postRepository.findTop5ByOrderByViewsDesc()).thenReturn(postList);
+    //when
+        List<PostResponseDto> findPostDtoList = postService.getTopQuestions();
+    //then
+        assertEquals(findPostDtoList.get(0).getViews(),5L);
+        assertEquals(findPostDtoList.get(1).getViews(),4L);
+        assertEquals(findPostDtoList.get(2).getViews(),3L);
+        assertEquals(findPostDtoList.get(3).getViews(),2L);
+        assertEquals(findPostDtoList.get(4).getViews(),1L);
+
+    }
+
 
 }

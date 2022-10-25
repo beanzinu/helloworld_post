@@ -12,11 +12,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.List;
-import java.util.Optional;
 
 @SpringBootTest
 public class PostRepositoryTest {
@@ -88,6 +86,7 @@ public class PostRepositoryTest {
         for(int i=0;i<10;i++){
             Post post1 = Post.builder()
                     .user(postWriter)
+                    .views(Integer.toUnsignedLong(i))
                     .build();
             postRepository.save(post1);
         }
@@ -122,6 +121,7 @@ public class PostRepositoryTest {
     }
 
     @Test
+    @DisplayName("페이지별 모든 게시물 조회")
     void findAllByPage(){
         for (int i=0;i<5;i++) {
             System.out.println("i = " + i);
@@ -210,5 +210,15 @@ public class PostRepositoryTest {
             postService.getAllPostByPage(pageable1);
         }
     }
+
+    @Test
+    @DisplayName("상위 5개 질문")
+    void getTop5Questions(){
+        List<Post> top5ByViewsDesc = postRepository.findTop5ByOrderByViewsDesc();
+        for ( Post p : top5ByViewsDesc){
+            System.out.println("p.getViews() = " + p.getViews());
+        }
+    }
+
 }
 

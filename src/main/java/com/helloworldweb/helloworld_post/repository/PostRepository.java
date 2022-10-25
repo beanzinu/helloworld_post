@@ -26,4 +26,10 @@ public interface PostRepository extends JpaRepository<Post,Long> {
     @Query(value = "select p from Post p join fetch p.user")
     List<Post> findAllWithUser(Pageable pageable);
 
+    /**
+     * 상위 5개 게시물 조회
+     * @return : List<Post>
+     */
+    List<Post> findTop5ByOrderByViewsDesc();
+
 }
