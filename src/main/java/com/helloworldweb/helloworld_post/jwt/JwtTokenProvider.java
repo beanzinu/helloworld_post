@@ -1,5 +1,6 @@
 package com.helloworldweb.helloworld_post.jwt;
 
+import com.helloworldweb.helloworld_post.domain.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
@@ -16,7 +17,6 @@ import java.util.Date;
 @RequiredArgsConstructor
 public class JwtTokenProvider {
 
-    private final JwtUserDetailsService jwtUserDetailsService;
     private static final long TOKEN_VALID_TIME = 1000L * 60 * 60 * 10; //10시간
 
     @Value("${secret.jwt.key}")
@@ -24,12 +24,12 @@ public class JwtTokenProvider {
 
 
     public Authentication getAuthentication(String token){
-        UserDetails userDetails = jwtUserDetailsService.loadUserByUserId( Long.parseLong(getUserId(token)) );
+        UserDetails userDetails =  (UserDetails) User.builder().id(Long.parseLong(getUserIdByToken(token)));
         return new UsernamePasswordAuthenticationToken(userDetails,"",userDetails.getAuthorities());
     }
 
     // Jwt 안의 유저 PK를 가져옴.
-    public String getUserId(String token)
+    public String getUserIdByToken(String token)
     {
         return Jwts.parser().setSigningKey(secretKey)
                 .parseClaimsJws(token).getBody().getSubject();
