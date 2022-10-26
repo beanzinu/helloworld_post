@@ -41,8 +41,6 @@ public class PostServiceImpl implements PostService {
         newPost.changeUser(caller);
         // DB
         Post savedPost = postRepository.save(newPost);
-        // 캐시
-        postCache.syncPut(savedPost.getId(),savedPost);
         return new PostResponseDto(savedPost);
     }
 
@@ -60,8 +58,9 @@ public class PostServiceImpl implements PostService {
         else { // 캐시 miss
             Post findPost = postRepository.findById(postId).orElseThrow(NoSuchElementException::new);
             // 캐시
+            PostResponseDto postResponseDto = new PostResponseDto(findPost);
             postCache.put(findPost.getId(), findPost);
-            return new PostResponseDto(findPost);
+            return postResponseDto;
         }
     }
 
@@ -107,6 +106,8 @@ public class PostServiceImpl implements PostService {
             throw new IllegalCallerException();
 
         postRepository.delete(findPost);
+        // 캐시
+        postCache.remove(postId);
     }
 
     /**
