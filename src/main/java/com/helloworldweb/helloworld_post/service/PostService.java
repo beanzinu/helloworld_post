@@ -12,10 +12,10 @@ public interface PostService {
     /**
      * CREATE : 게시물 작성
      * @param postRequestDto : 게시물의 내용
-     * @param email : 유저의 이메일
+     * @param userId : 유저의 PK
      * @return : PostResponseDto
      */
-    PostResponseDto addPost(PostRequestDto postRequestDto,String email);
+    PostResponseDto addPost(PostRequestDto postRequestDto,Long userId);
 
     /**
      * READ : 게시물 조회
@@ -27,22 +27,22 @@ public interface PostService {
     /**
      * UPDATE : 게시물 수정
      * @param postRequestDto : 게시물의 내용
-     * @param email : 유저의 이메일
+     * @param userId : 유저의 PK
      * @return : PostResponseDto
      */
-    PostResponseDto updatePost(PostRequestDto postRequestDto,String email);
+    PostResponseDto updatePost(PostRequestDto postRequestDto,Long userId);
 
     /**
      * DELETE : 게시물 삭제
      * @param postId : 게시물의 PK
-     * @param email : 유저의 이메일
+     * @param userId : 유저의 PK
      * @return : Boolean
      */
-    void deletePost(Long postId,String email);
+    void deletePost(Long postId,Long userId);
 
     /**
      * READ : 해당 이메일의 유저가 작성한 모든 게시물 조회
-     * @param userId : 유저의 이메일
+     * @param userId : 유저의 PK
      * @return : List<PostResponseDto>
      */
     List<PostResponseDto> getAllPostByUserId(Long userId);

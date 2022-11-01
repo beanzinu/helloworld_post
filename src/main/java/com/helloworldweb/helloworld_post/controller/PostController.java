@@ -36,7 +36,7 @@ public class PostController {
     public ResponseEntity<ApiResponse<?>> registerPost(PostRequestDto postRequestDto)
     {
         User caller = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        PostResponseDto postResponseDto = postService.addPost(postRequestDto,caller.getEmail());
+        PostResponseDto postResponseDto = postService.addPost(postRequestDto,caller.getId());
         return new ResponseEntity(ApiResponse.response(
                 HttpStatusCode.POST_SUCCESS,
                 HttpResponseMsg.POST_SUCCESS,postResponseDto),HttpStatus.OK);

@@ -30,6 +30,7 @@ public class JwtAuthenticationFilter extends GenericFilterBean {
         // 임시
         System.out.println("===== 임시로 필터통과 ======");
         User serverUser = User.builder()
+                .id(1L)
                 .email("test@email.com")
                 .build();
         UsernamePasswordAuthenticationToken serverToken = new UsernamePasswordAuthenticationToken(serverUser, "", serverUser.getAuthorities());

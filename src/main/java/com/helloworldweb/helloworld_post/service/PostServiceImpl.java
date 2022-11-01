@@ -28,16 +28,16 @@ public class PostServiceImpl implements PostService {
     /**
      * CREATE : 게시물 작성
      * @param postRequestDto : 클라이언트로부터 받은 정보
-     * @param email : 쿠키 안의 이메일
+     * @param userId : 유저의 PK
      * @return : PostResponseDto
     **/
     @Override
     @Transactional
-    public PostResponseDto addPost(PostRequestDto postRequestDto, String email) {
+    public PostResponseDto addPost(PostRequestDto postRequestDto,Long userId) {
         // Dto -> Post 객체
         Post newPost = postRequestDto.toEntity();
         // 어떤 유저가 작성했는지에 대한 연관관계 설정
-        User caller = userService.getUserByEmail(email);
+        User caller = userService.getUserById(userId);
         newPost.changeUser(caller);
         // DB
         Post savedPost = postRepository.save(newPost);
@@ -67,17 +67,17 @@ public class PostServiceImpl implements PostService {
     /**
      * UPDATE : 게시물 수정
      * @param postRequestDto : 게시물의 내용
-     * @param email          : 쿠키 안의 이메일
+     * @param userId : 유저의 PK
      * @return : PostResponseDto
      */
     @Override
     @Transactional
-    public PostResponseDto updatePost(PostRequestDto postRequestDto, String email) {
+    public PostResponseDto updatePost(PostRequestDto postRequestDto, Long userId) {
         // RequestDto 안의 postId를 통해 Post 조회
         Long targetPostId = postRequestDto.getPost_id();
         Post findPost = postRepository.findById(targetPostId).orElseThrow(NoSuchElementException::new);
         // email 을 통해 찾은 유저의 글이 아닌 경우 IllegalCallerException
-        User caller = userService.getUserByEmail(email);
+        User caller = userService.getUserById(userId);
         if (findPost.getUser().getId() != caller.getId())
             throw new IllegalCallerException();
         // findPost 안의 내용을 postRequestDto 안의 내용으로 대체 : Dirty Check
@@ -92,16 +92,16 @@ public class PostServiceImpl implements PostService {
     /**
      * DELETE : 게시물 삭제
      * @param postId : 게시물의 PK
-     * @param email  : 쿠키 안의 이메일
+     * @param userId  : 유저의 PK
      * @return : Boolean
      */
     @Override
     @Transactional
-    public void deletePost(Long postId, String email) {
+    public void deletePost(Long postId, Long userId) {
         // postId를 통해 Post 조회
         Post findPost = postRepository.findById(postId).orElseThrow(NoResultException::new);
         // email 을 통해 User 조회 -> 해당 유저의 글이 아닌 경우 IllegalCallerException
-        User caller = userService.getUserByEmail(email);
+        User caller = userService.getUserById(userId);
         if (findPost.getUser().getId() != caller.getId())
             throw new IllegalCallerException();
 
@@ -112,7 +112,7 @@ public class PostServiceImpl implements PostService {
 
     /**
      * READ : 해당 이메일의 유저가 작성한 모든 게시물 조회
-     * @param userId : 유저의 이메일
+     * @param userId : 유저의 PK
      * @return : List<PostResponseDto>
      */
     @Override
