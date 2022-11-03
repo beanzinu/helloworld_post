@@ -173,7 +173,7 @@ public class PostRepositoryTest {
     void getChangedResultFromCache(){
         PostResponseDto beforePost = postService.getPost(1L);
         System.out.println("beforePost.getTitle() = " + beforePost.getTitle());
-        postService.updatePost(PostRequestDto.builder().post_id(1L).title("cache title").user_id(2L).build(),1L);
+        postService.updatePost(PostRequestDto.builder().post_id(1L).title("cache title").user_id(2L).build(),2L);
         PostResponseDto afterPost = postService.getPost(1L);
         System.out.println("afterPost.getTitle() = " + afterPost.getTitle());
     }

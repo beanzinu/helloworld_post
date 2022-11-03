@@ -17,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -33,7 +34,7 @@ public class PostController {
      * @return : postResponseDto
      */
     @PostMapping("/api/post")
-    public ResponseEntity<ApiResponse<?>> registerPost(PostRequestDto postRequestDto)
+    public ResponseEntity<ApiResponse<?>> registerPost(@RequestBody PostRequestDto postRequestDto)
     {
         User caller = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         PostResponseDto postResponseDto = postService.addPost(postRequestDto,caller.getId());
