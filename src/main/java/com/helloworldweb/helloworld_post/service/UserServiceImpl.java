@@ -1,7 +1,6 @@
 package com.helloworldweb.helloworld_post.service;
 
 import com.helloworldweb.helloworld_post.domain.User;
-import com.helloworldweb.helloworld_post.dto.UserRequestDto;
 import com.helloworldweb.helloworld_post.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -59,7 +58,7 @@ public class UserServiceImpl implements UserService{
             RestTemplate restTemplate = new RestTemplate();
             URI uri = UriComponentsBuilder
                     .fromUriString("http://localhost:8080")
-                    .path("/msa/user")
+                    .path("/api/user")
                     .queryParam("id",userId)
                     .encode()
                     .build()

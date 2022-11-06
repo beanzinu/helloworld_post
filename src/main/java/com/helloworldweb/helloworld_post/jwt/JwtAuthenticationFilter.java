@@ -26,6 +26,7 @@ public class JwtAuthenticationFilter extends GenericFilterBean {
 
         // CORS 정책
         ( (HttpServletResponse) response ).setHeader("Access-Control-Allow-Origin","http://localhost:3000");
+        ( (HttpServletResponse) response ).addHeader("Access-Control-Allow-Headers","Auth,Content-Type");
 
         // 임시
         System.out.println("===== 임시로 필터통과 ======");
