@@ -58,7 +58,7 @@ public class PostServiceImpl implements PostService {
         else { // 캐시 miss
             Post findPost = postRepository.findById(postId).orElseThrow(NoSuchElementException::new);
             // 캐시
-            PostResponseDto postResponseDto = new PostResponseDto(findPost);
+            PostResponseDto postResponseDto = PostResponseDto.getDtoWithUser(findPost);
             postCache.put(findPost.getId(), findPost);
             return postResponseDto;
         }
@@ -149,7 +149,7 @@ public class PostServiceImpl implements PostService {
     @Override
     public List<PostResponseDto> getTopQuestions() {
         List<Post> findPosts = postRepository.findTop5ByOrderByViewsDesc();
-        return findPosts.stream().map(PostResponseDto::getDtoWithUser)
+        return findPosts.stream().map(PostResponseDto::new)
                 .collect(Collectors.toList());
     }
 }

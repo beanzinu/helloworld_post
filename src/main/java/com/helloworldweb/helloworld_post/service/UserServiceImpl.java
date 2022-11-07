@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.simple.JSONObject;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -95,4 +96,14 @@ public class UserServiceImpl implements UserService{
         }
     }
 
+    /**
+     * JWT 토큰 내의 유저정보로 유저조회
+     * @return : User
+     */
+    @Override
+    public User getCaller() {
+        Long id = ((User) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getId();
+        return userRepository.findById(id)
+                .orElseThrow(()->new NoResultException("UserServiceImpl - getCaller : 유저를 찾을 수 없음."));
+    }
 }

@@ -29,7 +29,7 @@ public class PostController {
      * @param postRequestDto : 질문내용 (HTTP BODY)
      * @return : postResponseDto
      */
-    @PostMapping("/api/post")
+    @PostMapping("/api/post/question")
     public ResponseEntity<ApiResponse<?>> registerPost(@RequestBody PostRequestDto postRequestDto)
     {
         User caller = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -39,7 +39,7 @@ public class PostController {
                 HttpResponseMsg.POST_SUCCESS,postResponseDto),HttpStatus.OK);
     }
 
-    @GetMapping("/api/post")
+    @GetMapping("/api/post/question")
     public ResponseEntity<ApiResponse<?>> getPost(@RequestParam (value = "id")Long postId)
     {
         PostResponseDto postResponseDto = postService.getPost(postId);
@@ -53,7 +53,7 @@ public class PostController {
      * @param userId : 유저의 PK
      * @return : List<PostResponseDto>
      */
-    @GetMapping("/api/post/user")
+    @GetMapping("/api/post/question/user")
     public ResponseEntity<ApiResponse<?>> getPostByUserId(@RequestParam(value = "id")Long userId){
         List<PostResponseDto> postResponseDto = postService.getAllPostByUserId(userId);
         return new ResponseEntity(ApiResponse.response(
@@ -80,7 +80,7 @@ public class PostController {
      * @return : List<PostResponseDto>
      */
     @GetMapping("/api/post/top-questions")
-    public ResponseEntity<ApiResponse<?>> getTopQuestions(){
+    public ResponseEntity<ApiResponse<?>> getTopPosts(){
         List<PostResponseDto> postResponseDto = postService.getTopQuestions();
         return new ResponseEntity(ApiResponse.response(
                 HttpStatusCode.GET_SUCCESS,

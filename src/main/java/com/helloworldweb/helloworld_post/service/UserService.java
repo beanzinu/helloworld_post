@@ -18,5 +18,9 @@ public interface UserService {
      */
     User getUserById(Long id);
 
-
+    /**
+     * JWT 토큰 내의 유저정보로 유저조회
+     * @return : User
+     */
+    User getCaller();
 }
