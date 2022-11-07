@@ -21,6 +21,7 @@ public class PostServiceImpl implements PostService {
     
     private final PostRepository postRepository;
     private final UserService userService;
+    private final PostSubCommentService postSubCommentService;
 
     // 캐시
     private static Cache<Long,Post> postCache = new Cache<>(5);
@@ -53,15 +54,22 @@ public class PostServiceImpl implements PostService {
     public PostResponseDto getPost(Long postId) {
         if ( postCache.containsKey(postId)) { // 캐시 hit
             Post cachePost = postCache.get(postId);
-            return new PostResponseDto(cachePost);
+            PostResponseDto postResponseDto = PostResponseDto.getDtoWithUser(cachePost);
+            postResponseDto.setPostCommentResponseDtoList(postSubCommentService.getPostCommentListByPostId(postId));
+
+            return postResponseDto;
         }
         else { // 캐시 miss
             Post findPost = postRepository.findById(postId).orElseThrow(NoSuchElementException::new);
             // 캐시
             PostResponseDto postResponseDto = PostResponseDto.getDtoWithUser(findPost);
+            postResponseDto.setPostCommentResponseDtoList(postSubCommentService.getPostCommentListByPostId(postId));
+
             postCache.put(findPost.getId(), findPost);
             return postResponseDto;
         }
+
+
     }
 
     /**

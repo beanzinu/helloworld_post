@@ -14,11 +14,19 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
+
 @Controller
 @RequiredArgsConstructor
 public class PostSubCommentController {
     private final PostSubCommentService postSubCommentService;
 
+    /**
+     * POST : 댓글/대댓글 작성
+     * @param postId : 게시물 PK
+     * @param postCommentId : 댓글 PK
+     * @param postSubCommentRequestDto : 댓글 내용 DTO
+     * @return
+     */
     @PostMapping(value = "/api/post/question/comment")
     public ResponseEntity<ApiResponse> registerPostSubComment(
             @RequestParam(value = "postId",required = false) Long postId,

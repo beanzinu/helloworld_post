@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 public class PostResponseDto {
@@ -14,6 +15,7 @@ public class PostResponseDto {
     private String title;
     private String tags;
     private Long views;
+    private List<PostCommentResponseDto> postCommentResponseDtoList;
     private UserResponseDto userResponseDto;
     private LocalDateTime createdTime;
     private LocalDateTime modifiedTime;
