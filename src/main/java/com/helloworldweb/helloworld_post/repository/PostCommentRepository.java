@@ -12,7 +12,7 @@ public interface PostCommentRepository extends JpaRepository<PostComment,Long> {
     @Query(value = "select distinct pc from PostComment pc "+
             "join fetch pc.post " +
             "join fetch pc.postSubComments psc " +
-            "join fetch psc.writer " +
+            "left join fetch psc.writer " +
             "where pc.post.id=:postId"
     )
     List<PostComment> findAllPostCommentByPostId(@Param(value = "postId") Long postId);

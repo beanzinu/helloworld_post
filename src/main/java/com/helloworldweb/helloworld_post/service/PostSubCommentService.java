@@ -23,4 +23,18 @@ public interface PostSubCommentService {
      * @return : List<PostSubCommentResponseDto>
      */
     List<PostCommentResponseDto> getPostCommentListByPostId(Long postId);
+
+    /**
+     * UPDATE : 해당 댓글의 내용 수정
+     * @param postSubCommentRequestDto : 댓글 수정내용 DTO
+     * @return : PostSubCommentResponseDto
+     */
+    PostSubCommentResponseDto updatePostSubComment(PostSubCommentRequestDto postSubCommentRequestDto);
+
+    /**
+     * DELETE : 해당 댓글 삭제
+     * @param postSubCommentId : 댓글 PK
+     */
+    void deletePostSubComment(Long postSubCommentId);
+
 }

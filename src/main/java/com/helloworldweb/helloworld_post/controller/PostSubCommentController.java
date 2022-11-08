@@ -10,9 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 
 @Controller
@@ -31,11 +29,32 @@ public class PostSubCommentController {
     public ResponseEntity<ApiResponse> registerPostSubComment(
             @RequestParam(value = "postId",required = false) Long postId,
             @RequestParam(value = "postCommentId",required = false) Long postCommentId,
-            @RequestBody PostSubCommentRequestDto postSubCommentRequestDto){
+            @RequestBody PostSubCommentRequestDto postSubCommentRequestDto
+    ){
         PostSubCommentResponseDto postSubCommentResponseDto = postSubCommentService.addPostSubComment(postId, postCommentId, postSubCommentRequestDto);
         return new ResponseEntity(ApiResponse.response(
                 HttpStatusCode.POST_SUCCESS,
                 HttpResponseMsg.POST_SUCCESS,postSubCommentResponseDto), HttpStatus.OK);
+    }
+
+    @PutMapping(value = "/api/post/question/comment")
+    public ResponseEntity<ApiResponse> updatePostSubComment(
+            @RequestBody PostSubCommentRequestDto postSubCommentRequestDto
+    ){
+        PostSubCommentResponseDto postSubCommentResponseDto = postSubCommentService.updatePostSubComment(postSubCommentRequestDto);
+        return new ResponseEntity(ApiResponse.response(
+                HttpStatusCode.PUT_SUCCESS,
+                HttpResponseMsg.PUT_SUCCESS,postSubCommentResponseDto), HttpStatus.OK);
+    }
+
+    @DeleteMapping(value = "/api/post/question/comment")
+    public ResponseEntity<ApiResponse> deletePostSubComment(
+            @RequestParam(value = "postSubCommentId") Long postSubCommentId
+    ){
+        postSubCommentService.deletePostSubComment(postSubCommentId);
+        return new ResponseEntity(ApiResponse.response(
+                HttpStatusCode.DELETE_SUCCESS,
+                HttpResponseMsg.DELETE_SUCCESS), HttpStatus.OK);
     }
 
 }

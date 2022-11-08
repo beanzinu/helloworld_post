@@ -57,10 +57,12 @@ public class PostSubCommentServiceImplTest {
         List<PostCommentResponseDto> postCommentResponseDtoList = postSubCommentService.getPostCommentListByPostId(2L);
 
         // then
-        assertEquals(postCommentResponseDtoList.get(0).getPostSubCommentResponseDtoList().get(0).getContent()
-                ,testPostSubComment.getContent());
-        assertEquals(postCommentResponseDtoList.get(0).getPostSubCommentResponseDtoList().get(0).getUserResponseDto().getEmail()
-                ,testCaller.getEmail());
+        assertEquals(testPostSubComment.getContent(),
+                postCommentResponseDtoList.get(0).getPostSubCommentResponseDtoList().get(0).getContent()
+                );
+        assertEquals(testCaller.getEmail(),
+                postCommentResponseDtoList.get(0).getPostSubCommentResponseDtoList().get(0).getUserResponseDto().getEmail()
+                );
 
     }
 
@@ -77,8 +79,8 @@ public class PostSubCommentServiceImplTest {
         PostSubCommentResponseDto postSubCommentResponseDto = postSubCommentService.addPostSubComment(testPost.getId(),null,postSubCommentRequestDto);
 
         // then
-        assertEquals(postSubCommentResponseDto.getUserResponseDto().getEmail(),"123");
-        assertEquals(postSubCommentResponseDto.getContent(),"댓글 내용");
+        assertEquals("123",postSubCommentResponseDto.getUserResponseDto().getEmail());
+        assertEquals("댓글 내용",postSubCommentResponseDto.getContent());
     }
 
     @Test
@@ -93,8 +95,37 @@ public class PostSubCommentServiceImplTest {
         PostSubCommentResponseDto postSubCommentResponseDto = postSubCommentService.addPostSubComment(testPost.getId(),testPostComment.getId(),postSubCommentRequestDto);
 
         // then
-        assertEquals(postSubCommentResponseDto.getUserResponseDto().getEmail(),"123");
-        assertEquals(postSubCommentResponseDto.getContent(),"댓글 내용");
+        assertEquals("123",postSubCommentResponseDto.getUserResponseDto().getEmail());
+        assertEquals("댓글 내용",postSubCommentResponseDto.getContent());
     }
 
+
+    @Test
+    @DisplayName("댓글 수정")
+    void updatePostSubComment(){
+        // given
+        PostSubCommentRequestDto postSubCommentRequestDto = PostSubCommentRequestDto.builder().id(testPostSubComment.getId()).content("수정 내용").build();
+        when(userService.getCaller()).thenReturn(testCaller);
+        when(postSubCommentRepository.findById(any(Long.class))).thenReturn(Optional.of(testPostSubComment));
+
+        // when
+        PostSubCommentResponseDto postSubCommentResponseDto = postSubCommentService.updatePostSubComment(postSubCommentRequestDto);
+
+        // then
+        assertEquals("수정 내용",postSubCommentResponseDto.getContent());
+    }
+
+    @Test
+    @DisplayName("댓글 삭제")
+    void deletePostSubComment(){
+        // given
+        when(userService.getCaller()).thenReturn(testCaller);
+        when(postSubCommentRepository.findById(any(Long.class))).thenReturn(Optional.of(testPostSubComment));
+
+        // when
+        postSubCommentService.deletePostSubComment(testPostSubComment.getId());
+
+        // then
+        assertEquals("삭제된 댓글입니다.",testPostSubComment.getContent());
+    }
 }

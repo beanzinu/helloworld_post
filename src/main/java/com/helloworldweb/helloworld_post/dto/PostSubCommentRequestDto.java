@@ -7,10 +7,12 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 public class PostSubCommentRequestDto {
+    private Long id;
     private String content;
 
     @Builder
-    public PostSubCommentRequestDto(String content) {
+    public PostSubCommentRequestDto(Long id, String content) {
+        this.id = id;
         this.content = content;
     }
 }
