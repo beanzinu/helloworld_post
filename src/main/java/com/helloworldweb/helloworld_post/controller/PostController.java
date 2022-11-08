@@ -10,14 +10,11 @@ import com.helloworldweb.helloworld_post.service.PostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.repository.query.Param;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -32,14 +29,23 @@ public class PostController {
      * @param postRequestDto : 질문내용 (HTTP BODY)
      * @return : postResponseDto
      */
-    @PostMapping("/api/post")
-    public ResponseEntity<ApiResponse<?>> registerPost(PostRequestDto postRequestDto)
+    @PostMapping("/api/post/question")
+    public ResponseEntity<ApiResponse<?>> registerPost(@RequestBody PostRequestDto postRequestDto)
     {
         User caller = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        PostResponseDto postResponseDto = postService.addPost(postRequestDto,caller.getEmail());
+        PostResponseDto postResponseDto = postService.addPost(postRequestDto,caller.getId());
         return new ResponseEntity(ApiResponse.response(
                 HttpStatusCode.POST_SUCCESS,
                 HttpResponseMsg.POST_SUCCESS,postResponseDto),HttpStatus.OK);
+    }
+
+    @GetMapping("/api/post/question")
+    public ResponseEntity<ApiResponse<?>> getPost(@RequestParam (value = "id")Long postId)
+    {
+        PostResponseDto postResponseDto = postService.getPost(postId);
+        return new ResponseEntity(ApiResponse.response(
+                HttpStatusCode.GET_SUCCESS,
+                HttpResponseMsg.GET_SUCCESS,postResponseDto),HttpStatus.OK);
     }
 
     /**
@@ -47,12 +53,12 @@ public class PostController {
      * @param userId : 유저의 PK
      * @return : List<PostResponseDto>
      */
-    @GetMapping("/api/post/user")
-    public ResponseEntity<ApiResponse<?>> getPostByUserId(@Param(value = "id")Long userId){
+    @GetMapping("/api/post/question/user")
+    public ResponseEntity<ApiResponse<?>> getPostByUserId(@RequestParam(value = "id")Long userId){
         List<PostResponseDto> postResponseDto = postService.getAllPostByUserId(userId);
         return new ResponseEntity(ApiResponse.response(
-                HttpStatusCode.POST_SUCCESS,
-                HttpResponseMsg.POST_SUCCESS,postResponseDto),HttpStatus.OK);
+                HttpStatusCode.GET_SUCCESS,
+                HttpResponseMsg.GET_SUCCESS,postResponseDto),HttpStatus.OK);
     }
 
     /**
@@ -60,13 +66,13 @@ public class PostController {
      * @param pageable : 페이지 정보
      * @return : List<PostResponseDto>
      */
-    @GetMapping("/api/post/qnasPage")
+    @GetMapping("/api/post/questions")
     public ResponseEntity<ApiResponse<?>> getPostByPage(
             @PageableDefault(size=10,sort="id",direction = Sort.Direction.DESC) Pageable pageable){
         List<PostResponseDto> postResponseDto = postService.getAllPostByPage(pageable);
         return new ResponseEntity(ApiResponse.response(
-                HttpStatusCode.POST_SUCCESS,
-                HttpResponseMsg.POST_SUCCESS,postResponseDto),HttpStatus.OK);
+                HttpStatusCode.GET_SUCCESS,
+                HttpResponseMsg.GET_SUCCESS,postResponseDto),HttpStatus.OK);
     }
 
     /**
@@ -74,11 +80,11 @@ public class PostController {
      * @return : List<PostResponseDto>
      */
     @GetMapping("/api/post/top-questions")
-    public ResponseEntity<ApiResponse<?>> getTopQuestions(){
+    public ResponseEntity<ApiResponse<?>> getTopPosts(){
         List<PostResponseDto> postResponseDto = postService.getTopQuestions();
         return new ResponseEntity(ApiResponse.response(
-                HttpStatusCode.POST_SUCCESS,
-                HttpResponseMsg.POST_SUCCESS,postResponseDto),HttpStatus.OK);
+                HttpStatusCode.GET_SUCCESS,
+                HttpResponseMsg.GET_SUCCESS,postResponseDto),HttpStatus.OK);
     }
 
 }

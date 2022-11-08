@@ -144,7 +144,7 @@ public class PostRepositoryTest {
             PostRequestDto p =PostRequestDto.builder()
                     .content(Integer.toString(i))
                     .build();
-            postService.addPost(p,"123");
+            postService.addPost(p,1L);
         }
         // [14,15,16,12,13]
         postService.getPost(12L);
@@ -154,7 +154,7 @@ public class PostRepositoryTest {
             PostRequestDto p =PostRequestDto.builder()
                     .content(Integer.toString(i))
                     .build();
-            postService.addPost(p,"123");
+            postService.addPost(p,1L);
         }
     }
 
@@ -173,7 +173,7 @@ public class PostRepositoryTest {
     void getChangedResultFromCache(){
         PostResponseDto beforePost = postService.getPost(1L);
         System.out.println("beforePost.getTitle() = " + beforePost.getTitle());
-        postService.updatePost(PostRequestDto.builder().post_id(1L).title("cache title").user_id(2L).build(),"234");
+        postService.updatePost(PostRequestDto.builder().post_id(1L).title("cache title").user_id(2L).build(),2L);
         PostResponseDto afterPost = postService.getPost(1L);
         System.out.println("afterPost.getTitle() = " + afterPost.getTitle());
     }

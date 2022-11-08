@@ -58,16 +58,16 @@ public class PostServiceImplTest {
     @DisplayName("게시물 작성")
     void addPost(){
     //given
-        when(userService.getUserByEmail(any(String.class))).thenReturn(testUser);
+        when(userService.getUserById(any(Long.class))).thenReturn(testUser);
         when(postRepository.save(any(Post.class))).then(AdditionalAnswers.returnsFirstArg());
 
     //when
-        PostResponseDto postResponseDto = postService.addPost(testPostRequestDto,testUserEmail);
+        PostResponseDto postResponseDto = postService.addPost(testPostRequestDto,testUserId);
 
     //then >> 제목과 내용이
-        assertEquals(postResponseDto.getContent(),testPostRequestDto.getContent());
-        assertEquals(postResponseDto.getTitle(),testPostRequestDto.getTitle());
-        assertEquals(postResponseDto.getUser_id(),testPostRequestDto.getUser_id());
+        assertEquals(testPostRequestDto.getContent(),postResponseDto.getContent());
+        assertEquals(testPostRequestDto.getTitle(),postResponseDto.getTitle());
+        assertEquals(testPostRequestDto.getUser_id(),postResponseDto.getUser_id());
 
     }
 
@@ -79,7 +79,7 @@ public class PostServiceImplTest {
     //when
         PostResponseDto postResponseDto = postService.getPost(testPostId);
     //then
-        assertEquals(postResponseDto.getPost_id(),testPostId);
+        assertEquals(testPostId,postResponseDto.getPost_id());
     }
 
     @Test
@@ -94,15 +94,15 @@ public class PostServiceImplTest {
                 .content("변경전 내용")
                 .build();
         when(postRepository.findById(any(Long.class))).thenReturn(Optional.of(beforeUpdatePost));
-        when(userService.getUserByEmail(any(String.class))).thenReturn(testUser);
+        when(userService.getUserById(any(Long.class))).thenReturn(testUser);
     //when
-        PostResponseDto postResponseDto = postService.updatePost(testPostRequestDto, testUserEmail);
+        PostResponseDto postResponseDto = postService.updatePost(testPostRequestDto, testUserId);
 
     //then
-        assertEquals(postResponseDto.getPost_id(),testPostId);
-        assertEquals(postResponseDto.getTitle(),testTitle);
-        assertEquals(postResponseDto.getContent(),testContent);
-        assertEquals(postResponseDto.getUser_id(),testUserId);
+        assertEquals(testPostId,postResponseDto.getPost_id());
+        assertEquals(testTitle,postResponseDto.getTitle());
+        assertEquals(testContent,postResponseDto.getContent());
+        assertEquals(testUserId,postResponseDto.getUser_id());
     }
 
     @Test
@@ -110,10 +110,8 @@ public class PostServiceImplTest {
     void updatePostByIllegalCaller(){
     //given
         // 변경전 Post 생성
-        String illegallCallerEmail = "illegalcaller@email.com";
-        User illegaCaller = User.builder()
+        User illegalCaller = User.builder()
                 .id(-1L)
-                .email(illegallCallerEmail)
                 .build();
         Post beforeUpdatePost = Post.builder()
                 .id(testPostId)
@@ -122,10 +120,10 @@ public class PostServiceImplTest {
                 .content("변경전 내용")
                 .build();
         when(postRepository.findById(any(Long.class))).thenReturn(Optional.of(beforeUpdatePost));
-        when(userService.getUserByEmail(any(String.class))).thenReturn(illegaCaller);
+        when(userService.getUserById(any(Long.class))).thenReturn(illegalCaller);
     //then
         assertThrows(IllegalCallerException.class,()->{
-            postService.updatePost(testPostRequestDto,illegallCallerEmail);
+            postService.updatePost(testPostRequestDto,-1L);
         });
     }
 
@@ -134,11 +132,11 @@ public class PostServiceImplTest {
     void deletePost(){
     //given
         when(postRepository.findById(any(Long.class))).thenReturn(Optional.of(testPost));
-        when(userService.getUserByEmail(any(String.class))).thenReturn(testUser);
+        when(userService.getUserById(any(Long.class))).thenReturn(testUser);
     //when
     //then
         assertDoesNotThrow(()->{
-            postService.deletePost(testPostId,testUserEmail);
+            postService.deletePost(testPostId,1L);
         });
     }
 
@@ -151,9 +149,9 @@ public class PostServiceImplTest {
     //when
         List<PostResponseDto> findPosts = postService.getAllPostByUserId(testUser.getId());
     //then
-        assertEquals(findPosts.get(0).getContent(),testPost.getContent());
-        assertEquals(findPosts.get(0).getTitle(),testPost.getTitle());
-        assertEquals(findPosts.get(0).getUserResponseDto().getEmail(),testUser.getEmail());
+        assertEquals(testPost.getContent(),findPosts.get(0).getContent());
+        assertEquals(testPost.getTitle(),findPosts.get(0).getTitle());
+        assertEquals(testUser.getEmail(),findPosts.get(0).getUserResponseDto().getEmail());
     }
 
     @Test
@@ -164,17 +162,17 @@ public class PostServiceImplTest {
         Post post2 = Post.builder().user(testUser).build();
         Post post3 = Post.builder().user(testUser).build();
         PageImpl<Post> savedPage = new PageImpl<>(List.of(testPost, post1, post2, post3));
-        Page<Post> testPage = new PageImpl<>(List.of(testPost,post1,post2));
-        when(postRepository.findAll(any(Pageable.class))).thenReturn(testPage);
+        List<Post> testPage = List.of(testPost,post1,post2);
+        when(postRepository.findAllWithUser(any(Pageable.class))).thenReturn(testPage);
     //when : 첫번째 페이지의 게시물을 찾는다.
         Pageable pageable = PageRequest.of(0,3);
         List<PostResponseDto> findPostDtos = postService.getAllPostByPage(pageable);
     //then : 3개의 게시물만 찾아져야한다.
-        assertNotEquals(findPostDtos.size(),savedPage.getTotalPages());
-        assertEquals(findPostDtos.size(),3);
-        assertEquals(findPostDtos.get(0).getContent(),testPost.getContent());
-        assertEquals(findPostDtos.get(0).getTitle(),testPost.getTitle());
-        assertEquals(findPostDtos.get(0).getUserResponseDto().getEmail(),testUser.getEmail());
+        assertNotEquals(savedPage.getTotalPages(),findPostDtos.size());
+        assertEquals(3,findPostDtos.size());
+        assertEquals(testPost.getContent(),findPostDtos.get(0).getContent());
+        assertEquals(testPost.getTitle(),findPostDtos.get(0).getTitle());
+        assertEquals(testUser.getEmail(),findPostDtos.get(0).getUserResponseDto().getEmail());
     }
 
     @Test
@@ -191,11 +189,11 @@ public class PostServiceImplTest {
     //when
         List<PostResponseDto> findPostDtoList = postService.getTopQuestions();
     //then
-        assertEquals(findPostDtoList.get(0).getViews(),5L);
-        assertEquals(findPostDtoList.get(1).getViews(),4L);
-        assertEquals(findPostDtoList.get(2).getViews(),3L);
-        assertEquals(findPostDtoList.get(3).getViews(),2L);
-        assertEquals(findPostDtoList.get(4).getViews(),1L);
+        assertEquals(5L,findPostDtoList.get(0).getViews());
+        assertEquals(4L,findPostDtoList.get(1).getViews());
+        assertEquals(3L,findPostDtoList.get(2).getViews());
+        assertEquals(2L,findPostDtoList.get(3).getViews());
+        assertEquals(1L,findPostDtoList.get(4).getViews());
 
     }
 
