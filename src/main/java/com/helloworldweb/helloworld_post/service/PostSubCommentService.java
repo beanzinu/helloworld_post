@@ -20,9 +20,17 @@ public interface PostSubCommentService {
     /**
      * READ : 해당 게시물의 댓글들 조회
      * @param postId : 게시물 PK
-     * @return : List<PostSubCommentResponseDto>
+     * @return : List<PostCommentResponseDto>
      */
     List<PostCommentResponseDto> getPostCommentListByPostId(Long postId);
+
+
+    /**
+     * READ : 특정 유저가 작성한 댓글 조회
+     * @param userId : 유저 PK
+     * @return : List<PostSubCommentResponseDto>
+     */
+    List<PostSubCommentResponseDto> getPostSubCommentListByUserId(Long userId);
 
     /**
      * UPDATE : 해당 댓글의 내용 수정

@@ -86,6 +86,19 @@ public class PostSubCommentServiceImpl implements PostSubCommentService{
     }
 
     /**
+     * READ : 특정 유저가 작성한 댓글 조회
+     * @param userId : 유저 PK
+     * @return : List<PostSubCommentResponseDto>
+     */
+    @Override
+    public List<PostSubCommentResponseDto> getPostSubCommentListByUserId(Long userId) {
+        List<PostSubCommentResponseDto> findPostSubCommentDtoList = postSubCommentRepository.findAllByWriterId(userId)
+                .stream().map(PostSubCommentResponseDto::getPostSubCommentResponseDtoWithPostResponseDto)
+                .collect(Collectors.toList());
+        return findPostSubCommentDtoList;
+    }
+
+    /**
      * UPDATE : 해당 댓글의 내용 수정
      * @param postSubCommentRequestDto : 댓글 수정내용 DTO
      * @return : PostSubCommentResponseDto

@@ -12,11 +12,23 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 
 @Controller
 @RequiredArgsConstructor
 public class PostSubCommentController {
     private final PostSubCommentService postSubCommentService;
+
+    @GetMapping(value = "/api/post/question/comment/user")
+    public ResponseEntity<ApiResponse> getPostSubCommentListByUserId(
+            @RequestParam(value = "userId") Long userId
+    ){
+        List<PostSubCommentResponseDto> postSubCommentListByUserId = postSubCommentService.getPostSubCommentListByUserId(userId);
+        return new ResponseEntity(ApiResponse.response(
+                HttpStatusCode.GET_SUCCESS,
+                HttpResponseMsg.GET_SUCCESS,postSubCommentListByUserId), HttpStatus.OK);
+    }
 
     /**
      * POST : 댓글/대댓글 작성
@@ -37,6 +49,11 @@ public class PostSubCommentController {
                 HttpResponseMsg.POST_SUCCESS,postSubCommentResponseDto), HttpStatus.OK);
     }
 
+    /**
+     * PUT : 댓글 수정
+     * @param postSubCommentRequestDto : 수정 내용 DTO
+     * @return
+     */
     @PutMapping(value = "/api/post/question/comment")
     public ResponseEntity<ApiResponse> updatePostSubComment(
             @RequestBody PostSubCommentRequestDto postSubCommentRequestDto
