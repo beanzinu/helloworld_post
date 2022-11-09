@@ -52,9 +52,9 @@ public class Post extends BaseTimeEntity{
         this.title = title;
         this.content = content;
         this.tags = tags;
-        this.searchCounts = searchCounts;
-        this.views = views;
-        this.solved = solved;
+        this.searchCounts = 0L;
+        this.views = 0L;
+        this.solved = false;
     }
 
     // 어떤 유저가 작성했는지에 대한 연관관계 설정

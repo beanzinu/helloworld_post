@@ -24,7 +24,7 @@ public class JwtTokenProvider {
 
 
     public Authentication getAuthentication(String token){
-        UserDetails userDetails =  (UserDetails) User.builder().id(Long.parseLong(getUserIdByToken(token)));
+        UserDetails userDetails =  User.builder().id(Long.valueOf(getUserIdByToken(token))).build();
         return new UsernamePasswordAuthenticationToken(userDetails,"",userDetails.getAuthorities());
     }
 
@@ -35,12 +35,15 @@ public class JwtTokenProvider {
                 .parseClaimsJws(token).getBody().getSubject();
     }
 
-    public boolean verifyToken(String jwtToken){
-        try{
-            Jws<Claims> claims = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(jwtToken);
-            long valid_time = claims.getBody().getExpiration().getTime() - claims.getBody().getIssuedAt().getTime();
-            // refresh_token인지 확인
-            return valid_time > TOKEN_VALID_TIME ? false : !claims.getBody().getExpiration().before(new Date());
+    public boolean verifyToken(String token) {
+        try {
+            Claims claims = Jwts
+                    .parserBuilder()
+                    .setSigningKey(secretKey)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+            return !claims.getExpiration().before(new Date());
         } catch (Exception e) {
             return false;
         }
