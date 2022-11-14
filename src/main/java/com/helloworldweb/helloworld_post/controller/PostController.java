@@ -3,6 +3,7 @@ package com.helloworldweb.helloworld_post.controller;
 import com.helloworldweb.helloworld_post.domain.User;
 import com.helloworldweb.helloworld_post.dto.PostRequestDto;
 import com.helloworldweb.helloworld_post.dto.PostResponseDto;
+import com.helloworldweb.helloworld_post.dto.PostResponseDtoWithPageNum;
 import com.helloworldweb.helloworld_post.model.ApiResponse;
 import com.helloworldweb.helloworld_post.model.HttpResponseMsg;
 import com.helloworldweb.helloworld_post.model.HttpStatusCode;
@@ -54,7 +55,7 @@ public class PostController {
      * @return : List<PostResponseDto>
      */
     @GetMapping("/api/post/question/user")
-    public ResponseEntity<ApiResponse<?>> getPostByUserId(@RequestParam(value = "id")Long userId){
+    public ResponseEntity<ApiResponse<?>> getPostListByUserId(@RequestParam(value = "id")Long userId){
         List<PostResponseDto> postResponseDto = postService.getAllPostByUserId(userId);
         return new ResponseEntity(ApiResponse.response(
                 HttpStatusCode.GET_SUCCESS,
@@ -67,12 +68,12 @@ public class PostController {
      * @return : List<PostResponseDto>
      */
     @GetMapping("/api/post/questions")
-    public ResponseEntity<ApiResponse<?>> getPostByPage(
+    public ResponseEntity<ApiResponse<?>> getPostListByPage(
             @PageableDefault(size=10,sort="id",direction = Sort.Direction.DESC) Pageable pageable){
-        List<PostResponseDto> postResponseDto = postService.getAllPostByPage(pageable);
+        PostResponseDtoWithPageNum postResponseDtoWithPageNum = postService.getAllPostByPage(pageable);
         return new ResponseEntity(ApiResponse.response(
                 HttpStatusCode.GET_SUCCESS,
-                HttpResponseMsg.GET_SUCCESS,postResponseDto),HttpStatus.OK);
+                HttpResponseMsg.GET_SUCCESS,postResponseDtoWithPageNum),HttpStatus.OK);
     }
 
     /**
@@ -80,11 +81,27 @@ public class PostController {
      * @return : List<PostResponseDto>
      */
     @GetMapping("/api/post/top-questions")
-    public ResponseEntity<ApiResponse<?>> getTopPosts(){
+    public ResponseEntity<ApiResponse<?>> getTopPostList(){
         List<PostResponseDto> postResponseDto = postService.getTopQuestions();
         return new ResponseEntity(ApiResponse.response(
                 HttpStatusCode.GET_SUCCESS,
                 HttpResponseMsg.GET_SUCCESS,postResponseDto),HttpStatus.OK);
     }
 
+    /**
+     * GET : 질문 검색
+     * @param sentence : 검색 문장
+     * @param pageable : 페이지 객체
+     * @return : List<PostResponseDto>
+     */
+    @GetMapping("/api/post/question/search")
+    public ResponseEntity<ApiResponse> getPostListByPageAndSentence(
+            @RequestParam(name="sentence") String sentence,
+            @PageableDefault(size=10,sort="id",direction= Sort.Direction.DESC) Pageable pageable
+    ){
+        List<PostResponseDto> postResponseDtoList = postService.findPostListWithPageAndSentence(sentence, pageable);
+        return new ResponseEntity(ApiResponse.response(
+                HttpStatusCode.GET_SUCCESS,
+                HttpResponseMsg.GET_SUCCESS,postResponseDtoList),HttpStatus.OK);
+    }
 }

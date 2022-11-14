@@ -4,6 +4,7 @@ import com.helloworldweb.helloworld_post.domain.Post;
 import com.helloworldweb.helloworld_post.domain.User;
 import com.helloworldweb.helloworld_post.dto.PostRequestDto;
 import com.helloworldweb.helloworld_post.dto.PostResponseDto;
+import com.helloworldweb.helloworld_post.dto.PostResponseDtoWithPageNum;
 import com.helloworldweb.helloworld_post.repository.PostRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -162,12 +163,14 @@ public class PostServiceImplTest {
         Post post2 = Post.builder().user(testUser).build();
         Post post3 = Post.builder().user(testUser).build();
         PageImpl<Post> savedPage = new PageImpl<>(List.of(testPost, post1, post2, post3));
-        List<Post> testPage = List.of(testPost,post1,post2);
-        when(postRepository.findAllWithUser(any(Pageable.class))).thenReturn(testPage);
+        Page<Post> testPage = new PageImpl<>(List.of(testPost,post1,post2));
+//        List<Post> testPage = List.of(testPost,post1,post2);
+        when(postRepository.findAll(any(Pageable.class))).thenReturn(testPage);
     //when : 첫번째 페이지의 게시물을 찾는다.
         Pageable pageable = PageRequest.of(0,3);
-        List<PostResponseDto> findPostDtos = postService.getAllPostByPage(pageable);
-    //then : 3개의 게시물만 찾아져야한다.
+        PostResponseDtoWithPageNum findPostDto = postService.getAllPostByPage(pageable);
+        List<PostResponseDto> findPostDtos = findPostDto.getPostResponseDtoList();
+        //then : 3개의 게시물만 찾아져야한다.
         assertNotEquals(savedPage.getTotalPages(),findPostDtos.size());
         assertEquals(3,findPostDtos.size());
         assertEquals(testPost.getContent(),findPostDtos.get(0).getContent());
