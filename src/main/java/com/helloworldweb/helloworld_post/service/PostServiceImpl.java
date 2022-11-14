@@ -5,8 +5,10 @@ import com.helloworldweb.helloworld_post.domain.Post;
 import com.helloworldweb.helloworld_post.domain.User;
 import com.helloworldweb.helloworld_post.dto.PostRequestDto;
 import com.helloworldweb.helloworld_post.dto.PostResponseDto;
+import com.helloworldweb.helloworld_post.dto.PostResponseDtoWithPageNum;
 import com.helloworldweb.helloworld_post.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -51,9 +53,13 @@ public class PostServiceImpl implements PostService {
      * @return : PostResponseDto
      */
     @Override
+    @Transactional
     public PostResponseDto getPost(Long postId) {
         if ( postCache.containsKey(postId)) { // 캐시 hit
             Post cachePost = postCache.get(postId);
+            cachePost.raiseView();
+            postCache.syncPut(cachePost.getId(),cachePost);
+            postRepository.save(cachePost);
             PostResponseDto postResponseDto = PostResponseDto.getDtoWithUser(cachePost);
             postResponseDto.setPostCommentResponseDtoList(postSubCommentService.getPostCommentListByPostId(postId));
 
@@ -61,11 +67,12 @@ public class PostServiceImpl implements PostService {
         }
         else { // 캐시 miss
             Post findPost = postRepository.findById(postId).orElseThrow(NoSuchElementException::new);
+            findPost.raiseView();
             // 캐시
             PostResponseDto postResponseDto = PostResponseDto.getDtoWithUser(findPost);
             postResponseDto.setPostCommentResponseDtoList(postSubCommentService.getPostCommentListByPostId(postId));
 
-            postCache.put(findPost.getId(), findPost);
+            postCache.syncPut(findPost.getId(), findPost);
             return postResponseDto;
         }
 
@@ -134,11 +141,12 @@ public class PostServiceImpl implements PostService {
     /**
      * READ : 해당 페이지의 모든 게시물 조회
      * @param pageable : 페이지와 사이즈를 담고있는 Pageable 객체
-     * @return : List<PostResponseDto>
+     * @return : PostResponseDtoWithPageNum
      */
     @Override
-    public List<PostResponseDto> getAllPostByPage(Pageable pageable) {
-        List<Post> findPosts = postRepository.findAllWithUser(pageable);
+    public PostResponseDtoWithPageNum getAllPostByPage(Pageable pageable) {
+        Page<Post> findPosts = postRepository.findAll(pageable);
+
         // 캐시
         Map<Long,Post> map = new HashMap<>();
         for ( Post p : findPosts){
@@ -146,8 +154,7 @@ public class PostServiceImpl implements PostService {
         }
         postCache.syncPutAll(map);
 
-        return findPosts.stream().map(PostResponseDto::getDtoWithUser)
-                .collect(Collectors.toList());
+        return new PostResponseDtoWithPageNum(findPosts);
     }
 
     /**
@@ -159,5 +166,18 @@ public class PostServiceImpl implements PostService {
         List<Post> findPosts = postRepository.findTop5ByOrderByViewsDesc();
         return findPosts.stream().map(PostResponseDto::new)
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * READ : 질문들 검색결과 조회
+     * @param sentence : 검색 문장
+     * @param pageable : 페이지 객체
+     * @return : List<PostResponseDto>
+     */
+    @Override
+    public List<PostResponseDto> findPostListWithPageAndSentence(String sentence, Pageable pageable) {
+        return postRepository.findPostListWithPageAndSentence(sentence,pageable)
+                .map(PostResponseDto::getDtoWithUser)
+                .stream().collect(Collectors.toList());
     }
 }
