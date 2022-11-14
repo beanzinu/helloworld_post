@@ -82,6 +82,7 @@ public class PostRepositorySupportImpl extends QuerydslRepositorySupport impleme
                 .where(searchBuilder)
                 .orderBy(post.createdTime.desc());
 
+        // 총 페이지 수
         long count = postJPAQuery.stream().count();
         List<Post> results = getQuerydsl().applyPagination(pageable, postJPAQuery).fetch();
 

@@ -172,12 +172,10 @@ public class PostServiceImpl implements PostService {
      * READ : 질문들 검색결과 조회
      * @param sentence : 검색 문장
      * @param pageable : 페이지 객체
-     * @return : List<PostResponseDto>
+     * @return : PostResponseDtoWithPageNum
      */
     @Override
-    public List<PostResponseDto> findPostListWithPageAndSentence(String sentence, Pageable pageable) {
-        return postRepository.findPostListWithPageAndSentence(sentence,pageable)
-                .map(PostResponseDto::getDtoWithUser)
-                .stream().collect(Collectors.toList());
+    public PostResponseDtoWithPageNum findPostListWithPageAndSentence(String sentence, Pageable pageable) {
+        return new PostResponseDtoWithPageNum(postRepository.findPostListWithPageAndSentence(sentence,pageable));
     }
 }

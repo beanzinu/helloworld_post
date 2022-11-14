@@ -65,7 +65,7 @@ public interface PostService {
      * READ : 질문들 검색결과 조회
      * @param sentence : 검색 문장
      * @param pageable : 페이지 객체
-     * @return : List<PostResponseDto>
+     * @return : PostResponseDtoWithPageNum
      */
-    List<PostResponseDto> findPostListWithPageAndSentence(String sentence,Pageable pageable);
+    PostResponseDtoWithPageNum findPostListWithPageAndSentence(String sentence,Pageable pageable);
 }

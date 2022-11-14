@@ -99,9 +99,9 @@ public class PostController {
             @RequestParam(name="sentence") String sentence,
             @PageableDefault(size=10,sort="id",direction= Sort.Direction.DESC) Pageable pageable
     ){
-        List<PostResponseDto> postResponseDtoList = postService.findPostListWithPageAndSentence(sentence, pageable);
+        PostResponseDtoWithPageNum postResponseDtoWithPageNum = postService.findPostListWithPageAndSentence(sentence, pageable);
         return new ResponseEntity(ApiResponse.response(
                 HttpStatusCode.GET_SUCCESS,
-                HttpResponseMsg.GET_SUCCESS,postResponseDtoList),HttpStatus.OK);
+                HttpResponseMsg.GET_SUCCESS,postResponseDtoWithPageNum),HttpStatus.OK);
     }
 }
