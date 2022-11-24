@@ -1,5 +1,6 @@
 package com.helloworldweb.helloworld_post.domain;
 
+import com.helloworldweb.helloworld_post.dto.PostSubCommentRequestDto;
 import com.sun.istack.NotNull;
 import lombok.Builder;
 import lombok.Getter;
@@ -10,7 +11,7 @@ import javax.persistence.*;
 @Entity
 @NoArgsConstructor
 @Getter
-public class PostSubComment {
+public class PostSubComment extends BaseTimeEntity{
     @Id
     @GeneratedValue
     private Long id;
@@ -37,5 +38,15 @@ public class PostSubComment {
 
     public void changePostComment(PostComment postComment){
         this.postComment = postComment;
+    }
+
+    // DTO 로 변경
+    public void changeWithDto(PostSubCommentRequestDto postSubCommentRequestDto){
+        this.content = postSubCommentRequestDto.getContent();
+    }
+
+    public void delete(){
+        this.writer = null;
+        this.content = "삭제된 댓글입니다.";
     }
 }

@@ -1,5 +1,6 @@
 package com.helloworldweb.helloworld_post.jwt;
 
+import com.helloworldweb.helloworld_post.domain.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
@@ -16,7 +17,6 @@ import java.util.Date;
 @RequiredArgsConstructor
 public class JwtTokenProvider {
 
-    private final JwtUserDetailsService jwtUserDetailsService;
     private static final long TOKEN_VALID_TIME = 1000L * 60 * 60 * 10; //10시간
 
     @Value("${secret.jwt.key}")
@@ -24,23 +24,26 @@ public class JwtTokenProvider {
 
 
     public Authentication getAuthentication(String token){
-        UserDetails userDetails = jwtUserDetailsService.loadUserByUserId( Long.parseLong(getUserId(token)) );
+        UserDetails userDetails =  User.builder().id(Long.valueOf(getUserIdByToken(token))).build();
         return new UsernamePasswordAuthenticationToken(userDetails,"",userDetails.getAuthorities());
     }
 
     // Jwt 안의 유저 PK를 가져옴.
-    public String getUserId(String token)
+    public String getUserIdByToken(String token)
     {
         return Jwts.parser().setSigningKey(secretKey)
                 .parseClaimsJws(token).getBody().getSubject();
     }
 
-    public boolean verifyToken(String jwtToken){
-        try{
-            Jws<Claims> claims = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(jwtToken);
-            long valid_time = claims.getBody().getExpiration().getTime() - claims.getBody().getIssuedAt().getTime();
-            // refresh_token인지 확인
-            return valid_time > TOKEN_VALID_TIME ? false : !claims.getBody().getExpiration().before(new Date());
+    public boolean verifyToken(String token) {
+        try {
+            Claims claims = Jwts
+                    .parserBuilder()
+                    .setSigningKey(secretKey)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+            return !claims.getExpiration().before(new Date());
         } catch (Exception e) {
             return false;
         }

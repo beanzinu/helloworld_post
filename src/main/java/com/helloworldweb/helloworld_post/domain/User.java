@@ -19,7 +19,7 @@ import java.util.List;
 //@Table(indexes = {@Index(name = "email_index",columnList = "email")})
 public class User implements UserDetails {
 
-    @Id @GeneratedValue
+    @Id
     private Long id;
 
     @OneToMany(mappedBy = "user",cascade = CascadeType.PERSIST)
@@ -28,7 +28,6 @@ public class User implements UserDetails {
     @OneToMany(mappedBy = "writer")
     private List<PostSubComment> subComments = new ArrayList<>();
 
-    @NotNull
     private String email;
     private String profileUrl;
     private String nickName;

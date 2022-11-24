@@ -18,4 +18,12 @@ public interface PostSubCommentRepository extends JpaRepository<PostSubComment,L
             )
     List<PostSubComment> getAllPostSubCommentWithPostByWriterId(@Param(value = "userId")Long userId);
 
+
+    @Query(value = "select psc from PostSubComment psc " +
+            "join fetch psc.postComment pc " +
+            "join fetch pc.post p " +
+            "where psc.writer.id=:userId"
+
+    )
+    List<PostSubComment> findAllByWriterId(@Param(value = "userId") Long userId);
 }

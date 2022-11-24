@@ -33,6 +33,7 @@ public class PostRepositoryTest {
     @BeforeEach
     void setup(){
         User writer = User.builder()
+                .id(1L)
                 .email("123")
                 .build();
         userRepository.save(writer);
@@ -74,7 +75,7 @@ public class PostRepositoryTest {
         postComment1.addPostSubComment(postSubComment5);
         postComment1.addPostSubComment(postSubComment6);
 
-        User postWriter = User.builder().email("234").build();
+        User postWriter = User.builder().id(2L).email("234").build();
         userRepository.save(postWriter);
         Post post = Post.builder()
                 .user(postWriter)
@@ -144,7 +145,7 @@ public class PostRepositoryTest {
             PostRequestDto p =PostRequestDto.builder()
                     .content(Integer.toString(i))
                     .build();
-            postService.addPost(p,"123");
+            postService.addPost(p,1L);
         }
         // [14,15,16,12,13]
         postService.getPost(12L);
@@ -154,7 +155,7 @@ public class PostRepositoryTest {
             PostRequestDto p =PostRequestDto.builder()
                     .content(Integer.toString(i))
                     .build();
-            postService.addPost(p,"123");
+            postService.addPost(p,1L);
         }
     }
 
@@ -173,7 +174,7 @@ public class PostRepositoryTest {
     void getChangedResultFromCache(){
         PostResponseDto beforePost = postService.getPost(1L);
         System.out.println("beforePost.getTitle() = " + beforePost.getTitle());
-        postService.updatePost(PostRequestDto.builder().post_id(1L).title("cache title").user_id(2L).build(),"234");
+        postService.updatePost(PostRequestDto.builder().post_id(1L).title("cache title").user_id(2L).build(),2L);
         PostResponseDto afterPost = postService.getPost(1L);
         System.out.println("afterPost.getTitle() = " + afterPost.getTitle());
     }
@@ -218,6 +219,14 @@ public class PostRepositoryTest {
         for ( Post p : top5ByViewsDesc){
             System.out.println("p.getViews() = " + p.getViews());
         }
+    }
+
+    @Test
+    void tmp(){
+        Pageable pageable = PageRequest.of(0,3);
+//        postRepository.findAllWithUser(pageable);
+        Page<Post> allWithUser = postRepository.findAll(pageable);
+        System.out.println("allWithUser = " + allWithUser.getTotalPages());
     }
 
 }

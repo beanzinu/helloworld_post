@@ -5,8 +5,10 @@ import com.helloworldweb.helloworld_post.domain.Post;
 import com.helloworldweb.helloworld_post.domain.User;
 import com.helloworldweb.helloworld_post.dto.PostRequestDto;
 import com.helloworldweb.helloworld_post.dto.PostResponseDto;
+import com.helloworldweb.helloworld_post.dto.PostResponseDtoWithPageNum;
 import com.helloworldweb.helloworld_post.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +23,7 @@ public class PostServiceImpl implements PostService {
     
     private final PostRepository postRepository;
     private final UserService userService;
+    private final PostSubCommentService postSubCommentService;
 
     // 캐시
     private static Cache<Long,Post> postCache = new Cache<>(5);
@@ -28,21 +31,19 @@ public class PostServiceImpl implements PostService {
     /**
      * CREATE : 게시물 작성
      * @param postRequestDto : 클라이언트로부터 받은 정보
-     * @param email : 쿠키 안의 이메일
+     * @param userId : 유저의 PK
      * @return : PostResponseDto
     **/
     @Override
     @Transactional
-    public PostResponseDto addPost(PostRequestDto postRequestDto, String email) {
+    public PostResponseDto addPost(PostRequestDto postRequestDto,Long userId) {
         // Dto -> Post 객체
         Post newPost = postRequestDto.toEntity();
         // 어떤 유저가 작성했는지에 대한 연관관계 설정
-        User caller = userService.getUserByEmail(email);
+        User caller = userService.getUserById(userId);
         newPost.changeUser(caller);
         // DB
         Post savedPost = postRepository.save(newPost);
-        // 캐시
-        postCache.syncPut(savedPost.getId(),savedPost);
         return new PostResponseDto(savedPost);
     }
 
@@ -52,33 +53,46 @@ public class PostServiceImpl implements PostService {
      * @return : PostResponseDto
      */
     @Override
+    @Transactional
     public PostResponseDto getPost(Long postId) {
         if ( postCache.containsKey(postId)) { // 캐시 hit
             Post cachePost = postCache.get(postId);
-            return new PostResponseDto(cachePost);
+            cachePost.raiseView();
+            postCache.syncPut(cachePost.getId(),cachePost);
+            postRepository.save(cachePost);
+            PostResponseDto postResponseDto = PostResponseDto.getDtoWithUser(cachePost);
+            postResponseDto.setPostCommentResponseDtoList(postSubCommentService.getPostCommentListByPostId(postId));
+
+            return postResponseDto;
         }
         else { // 캐시 miss
             Post findPost = postRepository.findById(postId).orElseThrow(NoSuchElementException::new);
+            findPost.raiseView();
             // 캐시
-            postCache.put(findPost.getId(), findPost);
-            return new PostResponseDto(findPost);
+            PostResponseDto postResponseDto = PostResponseDto.getDtoWithUser(findPost);
+            postResponseDto.setPostCommentResponseDtoList(postSubCommentService.getPostCommentListByPostId(postId));
+
+            postCache.syncPut(findPost.getId(), findPost);
+            return postResponseDto;
         }
+
+
     }
 
     /**
      * UPDATE : 게시물 수정
      * @param postRequestDto : 게시물의 내용
-     * @param email          : 쿠키 안의 이메일
+     * @param userId : 유저의 PK
      * @return : PostResponseDto
      */
     @Override
     @Transactional
-    public PostResponseDto updatePost(PostRequestDto postRequestDto, String email) {
+    public PostResponseDto updatePost(PostRequestDto postRequestDto, Long userId) {
         // RequestDto 안의 postId를 통해 Post 조회
         Long targetPostId = postRequestDto.getPost_id();
         Post findPost = postRepository.findById(targetPostId).orElseThrow(NoSuchElementException::new);
         // email 을 통해 찾은 유저의 글이 아닌 경우 IllegalCallerException
-        User caller = userService.getUserByEmail(email);
+        User caller = userService.getUserById(userId);
         if (findPost.getUser().getId() != caller.getId())
             throw new IllegalCallerException();
         // findPost 안의 내용을 postRequestDto 안의 내용으로 대체 : Dirty Check
@@ -93,25 +107,27 @@ public class PostServiceImpl implements PostService {
     /**
      * DELETE : 게시물 삭제
      * @param postId : 게시물의 PK
-     * @param email  : 쿠키 안의 이메일
+     * @param userId  : 유저의 PK
      * @return : Boolean
      */
     @Override
     @Transactional
-    public void deletePost(Long postId, String email) {
+    public void deletePost(Long postId, Long userId) {
         // postId를 통해 Post 조회
         Post findPost = postRepository.findById(postId).orElseThrow(NoResultException::new);
         // email 을 통해 User 조회 -> 해당 유저의 글이 아닌 경우 IllegalCallerException
-        User caller = userService.getUserByEmail(email);
+        User caller = userService.getUserById(userId);
         if (findPost.getUser().getId() != caller.getId())
             throw new IllegalCallerException();
 
         postRepository.delete(findPost);
+        // 캐시
+        postCache.remove(postId);
     }
 
     /**
      * READ : 해당 이메일의 유저가 작성한 모든 게시물 조회
-     * @param userId : 유저의 이메일
+     * @param userId : 유저의 PK
      * @return : List<PostResponseDto>
      */
     @Override
@@ -125,11 +141,12 @@ public class PostServiceImpl implements PostService {
     /**
      * READ : 해당 페이지의 모든 게시물 조회
      * @param pageable : 페이지와 사이즈를 담고있는 Pageable 객체
-     * @return : List<PostResponseDto>
+     * @return : PostResponseDtoWithPageNum
      */
     @Override
-    public List<PostResponseDto> getAllPostByPage(Pageable pageable) {
-        List<Post> findPosts = postRepository.findAllWithUser(pageable);
+    public PostResponseDtoWithPageNum getAllPostByPage(Pageable pageable) {
+        Page<Post> findPosts = postRepository.findAll(pageable);
+
         // 캐시
         Map<Long,Post> map = new HashMap<>();
         for ( Post p : findPosts){
@@ -137,8 +154,7 @@ public class PostServiceImpl implements PostService {
         }
         postCache.syncPutAll(map);
 
-        return findPosts.stream().map(PostResponseDto::getDtoWithUser)
-                .collect(Collectors.toList());
+        return new PostResponseDtoWithPageNum(findPosts);
     }
 
     /**
@@ -148,7 +164,18 @@ public class PostServiceImpl implements PostService {
     @Override
     public List<PostResponseDto> getTopQuestions() {
         List<Post> findPosts = postRepository.findTop5ByOrderByViewsDesc();
-        return findPosts.stream().map(PostResponseDto::getDtoWithUser)
+        return findPosts.stream().map(PostResponseDto::new)
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * READ : 질문들 검색결과 조회
+     * @param sentence : 검색 문장
+     * @param pageable : 페이지 객체
+     * @return : PostResponseDtoWithPageNum
+     */
+    @Override
+    public PostResponseDtoWithPageNum findPostListWithPageAndSentence(String sentence, Pageable pageable) {
+        return new PostResponseDtoWithPageNum(postRepository.findPostListWithPageAndSentence(sentence,pageable));
     }
 }
