@@ -12,6 +12,7 @@ import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 @Entity
 @NoArgsConstructor
@@ -43,6 +44,14 @@ public class User implements UserDetails {
         this.profileUrl = profileUrl;
         this.nickName = nickName;
         this.subComments = postSubComments==null ? new ArrayList<>() : postSubComments;
+    }
+
+    public void updateUser(Map<String,String> map)
+    {
+        this.id = Long.valueOf(map.get("id"));
+        this.email = map.get("email");
+        this.profileUrl = map.get("profileUrl");
+        this.nickName = map.get("nickName");
     }
 
     public void addPost(Post post){
